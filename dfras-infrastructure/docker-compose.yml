@@ -1,0 +1,212 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: dfras-postgres
+    environment:
+      POSTGRES_DB: dfras_db
+      POSTGRES_USER: dfras_user
+      POSTGRES_PASSWORD: dfras_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../dfras-backend/infrastructure/docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dfras_user -d dfras_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: dfras-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ../dfras-backend
+      dockerfile: infrastructure/docker/Dockerfile.api-gateway
+    container_name: dfras-api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://dfras_user:dfras_password@postgres:5432/dfras_db
+      - JWT_SECRET_KEY=dfras-secret-key-change-in-production
+      - DATA_SERVICE_URL=http://data-service:8001
+      - ANALYTICS_SERVICE_URL=http://analytics-service:8002
+      - AI_QUERY_SERVICE_URL=http://ai-query-service:8010
+      - ADMIN_SERVICE_URL=http://admin-service:8008
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Data Service
+  data-service:
+    build:
+      context: ../dfras-backend
+      dockerfile: infrastructure/docker/Dockerfile.data-service
+    container_name: dfras-data-service
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://dfras_user:dfras_password@postgres:5432/dfras_db
+      - JWT_SECRET_KEY=dfras-secret-key-change-in-production
+    volumes:
+      - ../third-assignment-sample-data-set:/app/sample-data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Analytics Service
+  analytics-service:
+    build:
+      context: ../dfras-backend
+      dockerfile: infrastructure/docker/Dockerfile.analytics-service
+    container_name: dfras-analytics-service
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://dfras_user:dfras_password@postgres:5432/dfras_db
+      - JWT_SECRET_KEY=dfras-secret-key-change-in-production
+    volumes:
+      - ../third-assignment-sample-data-set:/app/sample-data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Data Ingestion Service (Phase 2)
+  data-ingestion-service:
+    build:
+      context: ../dfras-backend
+      dockerfile: infrastructure/docker/Dockerfile.data-ingestion-service
+    container_name: dfras-data-ingestion-service
+    ports:
+      - "8006:8006"
+    environment:
+      - DATABASE_URL=postgresql://dfras_user:dfras_password@postgres:5432/dfras_db
+      - JWT_SECRET_KEY=dfras-secret-key-change-in-production
+    volumes:
+      - ../third-assignment-sample-data-set:/app/sample-data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Enhanced Analytics Service (Phase 2)
+  enhanced-analytics-service:
+    build:
+      context: ../dfras-backend
+      dockerfile: infrastructure/docker/Dockerfile.enhanced-analytics-service
+    container_name: dfras-enhanced-analytics-service
+    ports:
+      - "8007:8007"
+    environment:
+      - DATABASE_URL=postgresql://dfras_user:dfras_password@postgres:5432/dfras_db
+      - JWT_SECRET_KEY=dfras-secret-key-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Query Analysis Service
+  ai-query-service:
+    build:
+      context: ../dfras-backend
+      dockerfile: infrastructure/docker/Dockerfile.ai-query-service
+    container_name: dfras-ai-query-service
+    ports:
+      - "8010:8010"
+    environment:
+      - DATABASE_URL=postgresql://dfras_user:dfras_password@postgres:5432/dfras_db
+      - JWT_SECRET_KEY=dfras-secret-key-change-in-production
+      - DATA_SERVICE_URL=http://data-service:8001
+      - ANALYTICS_SERVICE_URL=http://analytics-service:8002
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Admin Service
+  admin-service:
+    build:
+      context: ../dfras-backend
+      dockerfile: infrastructure/docker/Dockerfile.admin-service
+    container_name: dfras-admin-service
+    ports:
+      - "8008:8008"
+    environment:
+      - DATABASE_URL=postgresql://dfras_user:dfras_password@postgres:5432/dfras_db
+      - JWT_SECRET_KEY=dfras-secret-key-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8008/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend
+  frontend:
+    build:
+      context: ../dfras-frontend
+      dockerfile: Dockerfile
+    container_name: dfras-frontend
+    ports:
+      - "3001:3000"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: dfras-network

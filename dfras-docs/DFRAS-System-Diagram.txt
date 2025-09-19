@@ -1,0 +1,122 @@
+DFRAS SYSTEM ARCHITECTURE DIAGRAM
+=====================================
+
+┌─────────────────────────────────────────────────────────────────┐
+│                        DATA SOURCES                            │
+├─────────────────────────────────────────────────────────────────┤
+│  Order Management    │  Fleet Management    │  Warehouse Mgmt   │
+│  • Order details    │  • Driver logs       │  • Picking times  │
+│  • Delivery status  │  • GPS tracking      │  • Dispatch logs  │
+│  • Customer info    │  • Route data        │  • Stock levels   │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    DATA INGESTION LAYER                        │
+├─────────────────────────────────────────────────────────────────┤
+│  Kafka Topics        │  Schema Registry     │  Data Connectors  │
+│  • orders_raw       │  • Data validation   │  • REST APIs      │
+│  • fleet_raw        │  • Schema evolution  │  • DB connectors  │
+│  • warehouse_raw    │  • Version control   │  • File processors│
+│  • customer_raw     │  • Quality checks    │  • Webhook handlers│
+│  • external_raw     │                      │                  │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     PROCESSING LAYER                           │
+├─────────────────────────────────────────────────────────────────┤
+│  Stream Processing   │  Batch Processing    │  Event Store     │
+│  • Apache Flink      │  • Apache Spark      │  • Correlated     │
+│  • Real-time         │  • ETL operations    │    events        │
+│  • Correlation       │  • Data aggregation  │  • Pattern       │
+│  • Enrichment        │  • ML training       │    storage       │
+│  • Validation        │                      │  • Alert         │
+│                      │                      │    generation    │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     ANALYTICS LAYER                             │
+├─────────────────────────────────────────────────────────────────┤
+│  Event Correlation   │  Pattern Recognition  │  Root Cause      │
+│  • Temporal analysis│  • ML algorithms     │    Analysis      │
+│  • Spatial          │  • Anomaly detection │  • Primary       │
+│    correlation      │  • Trend analysis    │    causes        │
+│  • Causal           │  • Seasonal patterns │  • Contributing  │
+│    relationships    │                      │    factors       │
+│  • Statistical      │                      │  • Evidence      │
+│    significance     │                      │    trails        │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    INTELLIGENCE LAYER                          │
+├─────────────────────────────────────────────────────────────────┤
+│  Insight Generation  │  Recommendation     │  Simulation      │
+│  • NLP processing    │    Engine            │    Engine        │
+│  • Template engine   │  • Actionable        │  • What-if       │
+│  • Confidence        │    suggestions      │    scenarios     │
+│    scoring           │  • Priority ranking │  • Capacity      │
+│  • Report formatting │  • Implementation    │    planning      │
+│                      │    guide            │  • Risk          │
+│                      │  • Cost-benefit     │    assessment    │
+│                      │    analysis         │  • Optimization  │
+│                      │                      │    models        │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      OUTPUT LAYER                              │
+├─────────────────────────────────────────────────────────────────┤
+│  Dashboard          │  Reports             │  Alerts          │
+│  • Interactive      │  • PDF/Excel         │  • Email         │
+│    visualizations   │    formats           │    notifications │
+│  • Real-time        │  • Scheduled         │  • SMS alerts    │
+│    updates          │    generation        │  • Dashboard     │
+│  • Drill-down       │  • Email             │    warnings      │
+│    analysis         │    distribution      │  • Escalation    │
+│  • Role-based       │  • Custom templates   │    workflows     │
+│    views            │                      │                  │
+└─────────────────────────────────────────────────────────────────┘
+
+DATA FLOW SUMMARY:
+==================
+
+1. Data Sources → Data Ingestion → Processing → Analytics → Intelligence → Output
+2. Real-time processing within 5 minutes
+3. ML-powered correlation and analysis
+4. Role-based insights and recommendations
+5. Human-readable reports with actionable suggestions
+
+KEY BENEFITS:
+=============
+
+• Automated Data Aggregation: Eliminate manual data collection
+• Real-Time Monitoring: Instant visibility into delivery performance
+• Root Cause Analysis: Automatically identify causes of failures
+• Predictive Insights: Predict potential failure scenarios
+• Actionable Recommendations: Specific suggestions for improvement
+• Proactive Management: Shift from reactive to predictive operations
+
+TECHNICAL STACK:
+================
+
+• Container Orchestration: Kubernetes
+• Message Queue: Apache Kafka
+• Stream Processing: Apache Flink
+• Batch Processing: Apache Spark
+• Data Storage: ClickHouse, Neo4j, Redis
+• ML Framework: Scikit-learn, TensorFlow
+• NLP: NLTK, spaCy
+• API Framework: FastAPI
+• Frontend: React.js, D3.js
+
+PERFORMANCE CHARACTERISTICS:
+============================
+
+• Response Time: <30 seconds for standard queries
+• Data Processing: Real-time processing within 5 minutes
+• Scalability: Supports 100+ concurrent users
+• Availability: 99.9% uptime with fault tolerance
+• Data Volume: Handles 1M+ delivery records per month

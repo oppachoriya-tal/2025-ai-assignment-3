@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: dfras
+  labels:
+    app: analytics-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+    spec:
+      containers:
+      - name: analytics-service
+        image: dfras-infrastructure-analytics-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8002
+        env:
+        - name: POSTGRES_HOST
+          value: "postgres-service"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_USER
+          value: "dfras_user"
+        - name: POSTGRES_PASSWORD
+          value: "dfras_password"
+        - name: POSTGRES_DB
+          value: "dfras_db"
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        volumeMounts:
+        - name: sample-data
+          mountPath: /app/sample-data
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: sample-data
+        hostPath:
+          path: /Users/opachoriya/Project/AI_Assignments/Assignment_3/third-assignment-sample-data-set
+          type: Directory
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: dfras
+  labels:
+    app: analytics-service
+spec:
+  selector:
+    app: analytics-service
+  ports:
+  - port: 8002
+    targetPort: 8002
+    protocol: TCP
+  type: ClusterIP

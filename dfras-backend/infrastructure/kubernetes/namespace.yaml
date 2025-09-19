@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dfras
+  labels:
+    name: dfras
+    app: dfras-system

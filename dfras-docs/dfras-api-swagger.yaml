@@ -1,0 +1,1338 @@
+openapi: 3.0.3
+info:
+  title: DFRAS API
+  description: |
+    Delivery Failure Root Cause Analysis System (DFRAS) API
+    
+    A comprehensive AI-powered platform for analyzing delivery failures and providing predictive insights for logistics operations.
+    
+    ## Key Features
+    - Multi-source data integration (orders, fleet logs, warehouse records, customer feedback)
+    - AI-powered root cause analysis using LLM (all-MiniLM-L6-v2)
+    - Automated correlation engine for pattern recognition
+    - Intelligent reporting with actionable recommendations
+    - Predictive analytics for proactive failure prevention
+    
+    ## Authentication
+    All endpoints require JWT authentication. Use the `/auth/login` endpoint to obtain a token.
+    
+    ## Sample Data
+    The system includes comprehensive sample data from `third-assignment-sample-data-set`:
+    - 750+ clients across multiple cities
+    - 15,000+ orders with delivery status
+    - 50+ warehouses with capacity data
+    - 200+ drivers with performance metrics
+    - External factors (weather, traffic, events)
+    - Customer feedback and ratings
+  version: 1.0.0
+  contact:
+    name: DFRAS Support
+    email: support@dfras.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Local Development Server
+  - url: http://localhost:8002
+    description: Analytics Service Direct Access
+  - url: http://localhost:8001
+    description: Data Service Direct Access
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health Check
+      description: Check the health status of the API Gateway
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  service:
+                    type: string
+                    example: "api-gateway"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User Login
+      description: Authenticate user and obtain JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: "admin"
+                password:
+                  type: string
+                  example: "admin123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  token_type:
+                    type: string
+                    example: "bearer"
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      username:
+                        type: string
+                      role:
+                        type: string
+        '401':
+          description: Invalid credentials
+
+  /auth/verify:
+    get:
+      tags:
+        - Authentication
+      summary: Verify Token
+      description: Verify JWT token validity
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    example: true
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      username:
+                        type: string
+                      role:
+                        type: string
+        '401':
+          description: Invalid or expired token
+
+  /api/analytics/dashboard:
+    get:
+      tags:
+        - Analytics
+      summary: Get Dashboard Metrics
+      description: Retrieve comprehensive dashboard metrics including total orders, success rates, revenue, and failure analysis
+      responses:
+        '200':
+          description: Dashboard metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_orders:
+                    type: integer
+                    example: 15000
+                  successful_orders:
+                    type: integer
+                    example: 12000
+                  failed_orders:
+                    type: integer
+                    example: 2000
+                  pending_orders:
+                    type: integer
+                    example: 1000
+                  success_rate:
+                    type: number
+                    format: float
+                    example: 80.0
+                  total_revenue:
+                    type: number
+                    format: float
+                    example: 5076410.76
+                  lost_revenue:
+                    type: number
+                    format: float
+                    example: 5244984.42
+                  avg_order_value:
+                    type: number
+                    format: float
+                    example: 2614.01
+                  avg_failed_amount:
+                    type: number
+                    format: float
+                    example: 2622.49
+                  top_failure_reasons:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        reason:
+                          type: string
+                          example: "Stockout"
+                        count:
+                          type: integer
+                          example: 425
+                        percentage:
+                          type: number
+                          format: float
+                          example: 21.2
+                        total_amount:
+                          type: number
+                          format: float
+                          example: 1112500.0
+                        avg_amount:
+                          type: number
+                          format: float
+                          example: 2617.65
+                  orders_by_status:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                          example: "Delivered"
+                        count:
+                          type: integer
+                          example: 12000
+                  orders_by_state:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        state:
+                          type: string
+                          example: "Maharashtra"
+                        count:
+                          type: integer
+                          example: 3000
+                  orders_by_city:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        city:
+                          type: string
+                          example: "Mumbai"
+                        count:
+                          type: integer
+                          example: 1500
+                  daily_trends:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          example: "2024-01-15"
+                        total_orders:
+                          type: integer
+                          example: 500
+                        successful_orders:
+                          type: integer
+                          example: 400
+                        failed_orders:
+                          type: integer
+                          example: 80
+                  data_source:
+                    type: string
+                    example: "third-assignment-sample-data-set"
+                  last_updated:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal server error
+
+  /api/analytics/failure-analysis:
+    get:
+      tags:
+        - Analytics
+      summary: Get Failure Analysis
+      description: Retrieve detailed failure analysis with patterns, correlations, and insights
+      responses:
+        '200':
+          description: Failure analysis retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_failures:
+                    type: integer
+                    example: 2000
+                  failure_rate:
+                    type: number
+                    format: float
+                    example: 13.33
+                  top_failure_reasons:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        reason:
+                          type: string
+                          example: "Stockout"
+                        count:
+                          type: integer
+                          example: 425
+                        percentage:
+                          type: number
+                          format: float
+                          example: 21.2
+                        total_amount:
+                          type: number
+                          format: float
+                          example: 1112500.0
+                        avg_amount:
+                          type: number
+                          format: float
+                          example: 2617.65
+                  city_wise_failures:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        city:
+                          type: string
+                          example: "Mumbai"
+                        failures:
+                          type: integer
+                          example: 300
+                        failure_rate:
+                          type: number
+                          format: float
+                          example: 15.5
+                  warehouse_failures:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        warehouse_id:
+                          type: string
+                          example: "WH_001"
+                        failures:
+                          type: integer
+                          example: 150
+                        failure_rate:
+                          type: number
+                          format: float
+                          example: 12.8
+                  time_patterns:
+                    type: object
+                    properties:
+                      peak_failure_hours:
+                        type: array
+                        items:
+                          type: integer
+                          example: 14
+                      peak_failure_days:
+                        type: array
+                        items:
+                          type: string
+                          example: "Monday"
+                  external_factors:
+                    type: object
+                    properties:
+                      weather_correlation:
+                        type: number
+                        format: float
+                        example: 0.75
+                      traffic_correlation:
+                        type: number
+                        format: float
+                        example: 0.68
+        '500':
+          description: Internal server error
+
+  /api/analytics/sample-data-info:
+    get:
+      tags:
+        - Analytics
+      summary: Get Sample Data Information
+      description: Retrieve metadata and statistics about the sample dataset
+      responses:
+        '200':
+          description: Sample data information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data_statistics:
+                    type: object
+                    properties:
+                      clients:
+                        type: object
+                        properties:
+                          total_records:
+                            type: integer
+                            example: 750
+                          columns:
+                            type: array
+                            items:
+                              type: string
+                            example: ["client_id", "client_name", "city", "state"]
+                      orders:
+                        type: object
+                        properties:
+                          total_records:
+                            type: integer
+                            example: 15000
+                          columns:
+                            type: array
+                            items:
+                              type: string
+                            example: ["order_id", "client_id", "status", "amount"]
+                      warehouses:
+                        type: object
+                        properties:
+                          total_records:
+                            type: integer
+                            example: 50
+                          columns:
+                            type: array
+                            items:
+                              type: string
+                            example: ["warehouse_id", "warehouse_name", "city", "capacity"]
+                      drivers:
+                        type: object
+                        properties:
+                          total_records:
+                            type: integer
+                            example: 200
+                          columns:
+                            type: array
+                            items:
+                              type: string
+                            example: ["driver_id", "driver_name", "phone", "city"]
+                  data_source:
+                    type: string
+                    example: "third-assignment-sample-data-set"
+                  data_path:
+                    type: string
+                    example: "/app/sample-data"
+                  last_updated:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal server error
+
+  /api/analytics/sample-data:
+    get:
+      tags:
+        - Analytics
+      summary: Get Sample Data Records
+      description: Retrieve actual sample data records from the dataset
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of records to return per data type
+          required: false
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 1000
+      responses:
+        '200':
+          description: Sample data records retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      clients:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            client_id:
+                              type: string
+                              example: "CLIENT_001"
+                            client_name:
+                              type: string
+                              example: "ABC Corp"
+                            city:
+                              type: string
+                              example: "Mumbai"
+                            state:
+                              type: string
+                              example: "Maharashtra"
+                      orders:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            order_id:
+                              type: string
+                              example: "ORD_001"
+                            client_id:
+                              type: string
+                              example: "CLIENT_001"
+                            status:
+                              type: string
+                              example: "Delivered"
+                            amount:
+                              type: number
+                              format: float
+                              example: 2500.0
+                            order_date:
+                              type: string
+                              format: date-time
+                            failure_reason:
+                              type: string
+                              example: null
+                  data_source:
+                    type: string
+                    example: "third-assignment-sample-data-set"
+                  data_path:
+                    type: string
+                    example: "/app/sample-data"
+                  limit:
+                    type: integer
+                    example: 100
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal server error
+
+  /api/data/orders:
+    get:
+      tags:
+        - Data Management
+      summary: Get Orders
+      description: Retrieve paginated list of orders
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Number of orders per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: status
+          in: query
+          description: Filter by order status
+          required: false
+          schema:
+            type: string
+            enum: [Delivered, Failed, Pending, In-Transit]
+        - name: city
+          in: query
+          description: Filter by delivery city
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      total:
+                        type: integer
+                        example: 15000
+                      pages:
+                        type: integer
+                        example: 1500
+        '500':
+          description: Internal server error
+
+  /api/data/clients:
+    get:
+      tags:
+        - Data Management
+      summary: Get Clients
+      description: Retrieve paginated list of clients
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Number of clients per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: city
+          in: query
+          description: Filter by city
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: Filter by state
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Clients retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clients:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Client'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      total:
+                        type: integer
+                        example: 750
+                      pages:
+                        type: integer
+                        example: 75
+        '500':
+          description: Internal server error
+
+  /api/data/warehouses:
+    get:
+      tags:
+        - Data Management
+      summary: Get Warehouses
+      description: Retrieve list of warehouses
+      responses:
+        '200':
+          description: Warehouses retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  warehouses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Warehouse'
+        '500':
+          description: Internal server error
+
+  /api/data/drivers:
+    get:
+      tags:
+        - Data Management
+      summary: Get Drivers
+      description: Retrieve list of drivers
+      responses:
+        '200':
+          description: Drivers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  drivers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Driver'
+        '500':
+          description: Internal server error
+
+  /api/data-ingestion/sample-data:
+    post:
+      tags:
+        - Data Ingestion
+      summary: Ingest Sample Data
+      description: Populate database with sample data from third-assignment-sample-data-set
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: Sample data ingested successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Sample data ingested successfully"
+                  records_processed:
+                    type: integer
+                    example: 15000
+                  tables_populated:
+                    type: array
+                    items:
+                      type: string
+                    example: ["clients", "orders", "warehouses", "drivers"]
+        '500':
+          description: Internal server error
+
+  /api/data-ingestion/csv:
+    post:
+      tags:
+        - Data Ingestion
+      summary: Upload CSV File
+      description: Upload and process CSV file for data ingestion
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - table_name
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV file to upload
+                table_name:
+                  type: string
+                  description: Target table name for data insertion
+                  example: "orders"
+      responses:
+        '200':
+          description: CSV file processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "CSV file processed successfully"
+                  records_inserted:
+                    type: integer
+                    example: 1000
+                  table_name:
+                    type: string
+                    example: "orders"
+        '400':
+          description: Invalid file format or missing parameters
+        '500':
+          description: Internal server error
+
+  /api/data-ingestion/status:
+    get:
+      tags:
+        - Data Ingestion
+      summary: Get Ingestion Status
+      description: Retrieve current status of data ingestion processes
+      responses:
+        '200':
+          description: Ingestion status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "idle"
+                  last_ingestion:
+                    type: string
+                    format: date-time
+                    example: "2024-01-15T10:30:00Z"
+                  total_records:
+                    type: integer
+                    example: 15000
+                  tables_status:
+                    type: object
+                    properties:
+                      clients:
+                        type: object
+                        properties:
+                          records:
+                            type: integer
+                            example: 750
+                          last_updated:
+                            type: string
+                            format: date-time
+                      orders:
+                        type: object
+                        properties:
+                          records:
+                            type: integer
+                            example: 15000
+                          last_updated:
+                            type: string
+                            format: date-time
+        '500':
+          description: Internal server error
+
+  /api/data-ingestion/data-quality:
+    get:
+      tags:
+        - Data Ingestion
+      summary: Get Data Quality Report
+      description: Retrieve data quality metrics and validation results
+      responses:
+        '200':
+          description: Data quality report retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  overall_quality_score:
+                    type: number
+                    format: float
+                    example: 95.5
+                  table_quality:
+                    type: object
+                    properties:
+                      clients:
+                        type: object
+                        properties:
+                          completeness:
+                            type: number
+                            format: float
+                            example: 98.5
+                          accuracy:
+                            type: number
+                            format: float
+                            example: 97.2
+                          consistency:
+                            type: number
+                            format: float
+                            example: 96.8
+                      orders:
+                        type: object
+                        properties:
+                          completeness:
+                            type: number
+                            format: float
+                            example: 95.8
+                          accuracy:
+                            type: number
+                            format: float
+                            example: 94.5
+                          consistency:
+                            type: number
+                            format: float
+                            example: 93.2
+                  issues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        table:
+                          type: string
+                          example: "orders"
+                        column:
+                          type: string
+                          example: "amount"
+                        issue_type:
+                          type: string
+                          example: "missing_values"
+                        count:
+                          type: integer
+                          example: 25
+                        severity:
+                          type: string
+                          enum: [low, medium, high]
+                          example: "medium"
+        '500':
+          description: Internal server error
+
+  /api/data-ingestion/clear-data:
+    post:
+      tags:
+        - Data Ingestion
+      summary: Clear Data
+      description: Clear all data from the database (use with caution)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: Data cleared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "All data cleared successfully"
+                  tables_cleared:
+                    type: array
+                    items:
+                      type: string
+                    example: ["clients", "orders", "warehouses", "drivers"]
+        '500':
+          description: Internal server error
+
+  /api/ai/analyze:
+    post:
+      tags:
+        - AI Query
+      summary: Analyze Query
+      description: Process natural language queries using AI for delivery failure analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Natural language query about delivery failures
+                  example: "Why were deliveries delayed in Mumbai yesterday?"
+                context:
+                  type: string
+                  description: Analysis context
+                  example: "delivery_delay_analysis"
+                filters:
+                  type: object
+                  description: Additional filters for the analysis
+                  properties:
+                    city:
+                      type: string
+                      example: "Mumbai"
+                    date:
+                      type: string
+                      example: "yesterday"
+                    status:
+                      type: string
+                      example: "delayed"
+      responses:
+        '200':
+          description: Analysis completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  query:
+                    type: string
+                    example: "Why were deliveries delayed in Mumbai yesterday?"
+                  analysis:
+                    type: string
+                    example: "Based on the analysis of delivery data for Mumbai yesterday, the main causes of delays were..."
+                  insights:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        insight_type:
+                          type: string
+                          example: "weather_impact"
+                        description:
+                          type: string
+                          example: "Heavy rainfall in Mumbai caused 35% of delivery delays"
+                        impact_score:
+                          type: number
+                          format: float
+                          example: 0.85
+                        recommendations:
+                          type: array
+                          items:
+                            type: string
+                          example: ["Implement weather-based routing", "Increase buffer time during monsoon"]
+                  data_summary:
+                    type: object
+                    properties:
+                      total_deliveries:
+                        type: integer
+                        example: 500
+                      delayed_deliveries:
+                        type: integer
+                        example: 75
+                      delay_rate:
+                        type: number
+                        format: float
+                        example: 15.0
+                  confidence_score:
+                    type: number
+                    format: float
+                    example: 0.92
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid query or parameters
+        '500':
+          description: Internal server error
+
+  /api/ai/insights:
+    post:
+      tags:
+        - AI Query
+      summary: Generate Insights
+      description: Generate AI-powered insights from data analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - data_type
+                - analysis_type
+              properties:
+                data_type:
+                  type: string
+                  description: Type of data to analyze
+                  example: "orders"
+                analysis_type:
+                  type: string
+                  description: Type of analysis to perform
+                  example: "failure_patterns"
+                filters:
+                  type: object
+                  description: Filters for the analysis
+                  properties:
+                    city:
+                      type: string
+                      example: "Mumbai"
+                    date_range:
+                      type: string
+                      example: "last_7_days"
+                    status:
+                      type: string
+                      example: "failed"
+      responses:
+        '200':
+          description: Insights generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analysis_type:
+                    type: string
+                    example: "failure_patterns"
+                  insights:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        pattern:
+                          type: string
+                          example: "Weather-related delays"
+                        frequency:
+                          type: integer
+                          example: 45
+                        impact:
+                          type: number
+                          format: float
+                          example: 0.75
+                        description:
+                          type: string
+                          example: "Weather conditions significantly impact delivery success rates"
+                        recommendations:
+                          type: array
+                          items:
+                            type: string
+                          example: ["Implement weather monitoring", "Adjust delivery windows"]
+                  summary:
+                    type: object
+                    properties:
+                      total_patterns:
+                        type: integer
+                        example: 8
+                      high_impact_patterns:
+                        type: integer
+                        example: 3
+                      recommended_actions:
+                        type: integer
+                        example: 12
+                  confidence_score:
+                    type: number
+                    format: float
+                    example: 0.88
+        '400':
+          description: Invalid parameters
+        '500':
+          description: Internal server error
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Order:
+      type: object
+      properties:
+        order_id:
+          type: string
+          example: "ORD_001"
+        client_id:
+          type: string
+          example: "CLIENT_001"
+        customer_name:
+          type: string
+          example: "John Doe"
+        customer_phone:
+          type: string
+          example: "+91-9876543210"
+        delivery_address_line1:
+          type: string
+          example: "123 Main Street"
+        delivery_address_line2:
+          type: string
+          example: "Apt 4B"
+        city:
+          type: string
+          example: "Mumbai"
+        state:
+          type: string
+          example: "Maharashtra"
+        pincode:
+          type: string
+          example: "400001"
+        amount:
+          type: number
+          format: float
+          example: 2500.0
+        status:
+          type: string
+          enum: [Delivered, Failed, Pending, In-Transit]
+          example: "Delivered"
+        payment_mode:
+          type: string
+          example: "Credit Card"
+        order_date:
+          type: string
+          format: date-time
+        promised_delivery_date:
+          type: string
+          format: date-time
+        actual_delivery_date:
+          type: string
+          format: date-time
+        failure_reason:
+          type: string
+          example: null
+        created_at:
+          type: string
+          format: date-time
+
+    Client:
+      type: object
+      properties:
+        client_id:
+          type: string
+          example: "CLIENT_001"
+        client_name:
+          type: string
+          example: "ABC Corp"
+        contact_person:
+          type: string
+          example: "Jane Smith"
+        email:
+          type: string
+          format: email
+          example: "jane@abccorp.com"
+        phone:
+          type: string
+          example: "+91-9876543210"
+        address:
+          type: string
+          example: "456 Business Park"
+        city:
+          type: string
+          example: "Mumbai"
+        state:
+          type: string
+          example: "Maharashtra"
+        pincode:
+          type: string
+          example: "400001"
+        created_at:
+          type: string
+          format: date-time
+
+    Warehouse:
+      type: object
+      properties:
+        warehouse_id:
+          type: string
+          example: "WH_001"
+        warehouse_name:
+          type: string
+          example: "Mumbai Central Warehouse"
+        address:
+          type: string
+          example: "789 Industrial Area"
+        city:
+          type: string
+          example: "Mumbai"
+        state:
+          type: string
+          example: "Maharashtra"
+        pincode:
+          type: string
+          example: "400001"
+        capacity:
+          type: integer
+          example: 10000
+        current_stock:
+          type: integer
+          example: 7500
+        manager_name:
+          type: string
+          example: "Rajesh Kumar"
+        phone:
+          type: string
+          example: "+91-9876543210"
+        created_at:
+          type: string
+          format: date-time
+
+    Driver:
+      type: object
+      properties:
+        driver_id:
+          type: string
+          example: "DRV_001"
+        driver_name:
+          type: string
+          example: "Amit Singh"
+        phone:
+          type: string
+          example: "+91-9876543210"
+        email:
+          type: string
+          format: email
+          example: "amit@logistics.com"
+        license_number:
+          type: string
+          example: "DL123456789"
+        vehicle_number:
+          type: string
+          example: "MH01AB1234"
+        city:
+          type: string
+          example: "Mumbai"
+        state:
+          type: string
+          example: "Maharashtra"
+        experience_years:
+          type: integer
+          example: 5
+        rating:
+          type: number
+          format: float
+          example: 4.5
+        status:
+          type: string
+          enum: [Active, Inactive, On-Leave]
+          example: "Active"
+        created_at:
+          type: string
+          format: date-time
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Analytics
+    description: Data analytics and reporting
+  - name: Data Management
+    description: Core data operations
+  - name: Data Ingestion
+    description: Data upload and processing
+  - name: AI Query
+    description: AI-powered analysis and insights

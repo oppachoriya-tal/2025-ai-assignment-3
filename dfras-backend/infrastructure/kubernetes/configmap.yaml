@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dfras-config
+  namespace: dfras
+data:
+  # Database Configuration
+  POSTGRES_DB: "dfras_db"
+  POSTGRES_USER: "dfras_user"
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"
+  
+  # Redis Configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  
+  # Service Configuration
+  API_GATEWAY_URL: "http://api-gateway-service:8000"
+  DATA_SERVICE_URL: "http://data-service:8001"
+  ANALYTICS_SERVICE_URL: "http://analytics-service:8002"
+  CORRELATION_SERVICE_URL: "http://correlation-service:8003"
+  ML_SERVICE_URL: "http://ml-service:8004"
+  NOTIFICATION_SERVICE_URL: "http://notification-service:8005"
+  DATA_INGESTION_SERVICE_URL: "http://data-ingestion-service:8006"
+  ENHANCED_ANALYTICS_SERVICE_URL: "http://enhanced-analytics-service:8007"
+  INTELLIGENCE_SERVICE_URL: "http://intelligence-service:8008"
+  DEEP_LEARNING_SERVICE_URL: "http://deep-learning-service:8009"
+  AI_QUERY_SERVICE_URL: "http://ai-query-service:8010"
+  
+  # Environment
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Sample Data Configuration
+  SAMPLE_DATA_PATH: "/app/sample_data"
+  ENABLE_SAMPLE_DATA: "true"
