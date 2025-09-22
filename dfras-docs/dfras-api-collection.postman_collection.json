@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "dfras-api-collection",
-		"name": "DFRAS API Collection",
-		"description": "Complete API collection for DFRAS (Delivery Failure Root Cause Analysis System)",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"_postman_id": "dfras-api-collection-v2",
+		"name": "DFRAS API Collection v2.0",
+		"description": "Complete API collection for DFRAS (Delivery Failure Root Cause Analysis System) - Updated for current features",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "dfras-team"
 	},
 	"item": [
 		{
@@ -37,7 +38,7 @@
 					"response": []
 				},
 				{
-					"name": "Verify Token",
+					"name": "Get Current User",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -47,13 +48,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/auth/verify",
+							"raw": "{{base_url}}/auth/me",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"auth",
-								"verify"
+								"me"
 							]
 						}
 					},
@@ -79,46 +80,14 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "Analytics Service Health",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{analytics_url}}/health",
-							"host": [
-								"{{analytics_url}}"
-							],
-							"path": [
-								"health"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Data Service Health",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{data_url}}/health",
-							"host": [
-								"{{data_url}}"
-							],
-							"path": [
-								"health"
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
 		{
-			"name": "Analytics Service",
+			"name": "Dashboard",
 			"item": [
 				{
-					"name": "Dashboard Metrics",
+					"name": "Get Dashboard Data",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -140,9 +109,14 @@
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "Analytics",
+			"item": [
 				{
-					"name": "Failure Analysis",
+					"name": "Get Failure Analysis",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -166,7 +140,7 @@
 					"response": []
 				},
 				{
-					"name": "Sample Data Info",
+					"name": "Get Analytics Data",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -176,44 +150,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/analytics/sample-data-info",
+							"raw": "{{base_url}}/api/analytics/data",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"analytics",
-								"sample-data-info"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Sample Data Records",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/analytics/sample-data?limit=100",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"analytics",
-								"sample-data"
-							],
-							"query": [
-								{
-									"key": "limit",
-									"value": "100"
-								}
+								"data"
 							]
 						}
 					},
@@ -235,7 +179,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/data/orders?page=1&limit=10",
+							"raw": "{{base_url}}/api/data/orders",
 							"host": [
 								"{{base_url}}"
 							],
@@ -243,23 +187,13 @@
 								"api",
 								"data",
 								"orders"
-							],
-							"query": [
-								{
-									"key": "page",
-									"value": "1"
-								},
-								{
-									"key": "limit",
-									"value": "10"
-								}
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get Clients",
+					"name": "Get Sample Data",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -269,72 +203,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/data/clients?page=1&limit=10",
+							"raw": "{{base_url}}/api/data/sample-data",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"data",
-								"clients"
-							],
-							"query": [
-								{
-									"key": "page",
-									"value": "1"
-								},
-								{
-									"key": "limit",
-									"value": "10"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Warehouses",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/data/warehouses",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"data",
-								"warehouses"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Drivers",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/data/drivers",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"data",
-								"drivers"
+								"sample-data"
 							]
 						}
 					},
@@ -343,40 +219,8 @@
 			]
 		},
 		{
-			"name": "Data Ingestion Service",
+			"name": "Data Ingestion",
 			"item": [
-				{
-					"name": "Ingest Sample Data",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/data-ingestion/sample-data",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"data-ingestion",
-								"sample-data"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Upload CSV File",
 					"request": {
@@ -394,23 +238,42 @@
 									"key": "file",
 									"type": "file",
 									"src": []
-								},
-								{
-									"key": "table_name",
-									"value": "orders",
-									"type": "text"
 								}
 							]
 						},
 						"url": {
-							"raw": "{{base_url}}/api/data-ingestion/csv",
+							"raw": "{{base_url}}/api/data-ingestion/upload",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"data-ingestion",
-								"csv"
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ingest Sample Data",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/data-ingestion/sample-data",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"data-ingestion",
+								"sample-data"
 							]
 						}
 					},
@@ -463,38 +326,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "Clear Data",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/data-ingestion/clear-data",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"data-ingestion",
-								"clear-data"
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -502,55 +333,47 @@
 			"name": "AI Query Service",
 			"item": [
 				{
-					"name": "Analyze Query",
+					"name": "Process AI Query",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"query\": \"Why were deliveries delayed in Mumbai yesterday?\",\n  \"context\": \"delivery_analysis\"\n}"
+							"raw": "{\n  \"query\": \"What are the main causes of delivery failures?\",\n  \"context\": \"delivery_analysis\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/ai/analyze",
+							"raw": "{{base_url}}/api/ai/query",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"ai",
-								"analyze"
+								"query"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Generate Insights",
+					"name": "Get AI Insights",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"data_type\": \"orders\",\n  \"analysis_type\": \"failure_patterns\",\n  \"filters\": {\n    \"city\": \"Mumbai\",\n    \"date_range\": \"last_7_days\"\n  }\n}"
-						},
 						"url": {
 							"raw": "{{base_url}}/api/ai/insights",
 							"host": [
@@ -568,195 +391,169 @@
 			]
 		},
 		{
-			"name": "Sample Use Cases",
+			"name": "Enhanced Analytics",
 			"item": [
 				{
-					"name": "Why were deliveries delayed in city X yesterday?",
+					"name": "Get Enhanced Analytics",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"query\": \"Why were deliveries delayed in Mumbai yesterday?\",\n  \"context\": \"delivery_delay_analysis\",\n  \"filters\": {\n    \"city\": \"Mumbai\",\n    \"date\": \"yesterday\",\n    \"status\": \"delayed\"\n  }\n}"
-						},
 						"url": {
-							"raw": "{{base_url}}/api/ai/analyze",
+							"raw": "{{base_url}}/api/enhanced-analytics/data",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"ai",
-								"analyze"
+								"enhanced-analytics",
+								"data"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Why did Client X's orders fail in the past week?",
+					"name": "Get Visualizations",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"query\": \"Why did Client ABC Corp's orders fail in the past week?\",\n  \"context\": \"client_failure_analysis\",\n  \"filters\": {\n    \"client_id\": \"CLIENT_001\",\n    \"date_range\": \"last_7_days\",\n    \"status\": \"failed\"\n  }\n}"
-						},
 						"url": {
-							"raw": "{{base_url}}/api/ai/analyze",
+							"raw": "{{base_url}}/api/enhanced-analytics/visualizations",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"ai",
-								"analyze"
+								"enhanced-analytics",
+								"visualizations"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin Service",
+			"item": [
+				{
+					"name": "Get Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"users"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Top reasons for delivery failures linked to Warehouse B in August",
+					"name": "Create User",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"query\": \"Explain the top reasons for delivery failures linked to Warehouse B in August\",\n  \"context\": \"warehouse_failure_analysis\",\n  \"filters\": {\n    \"warehouse_id\": \"WH_002\",\n    \"month\": \"August\",\n    \"status\": \"failed\"\n  }\n}"
+							"raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"full_name\": \"New User\",\n  \"role\": \"data_analyst\",\n  \"password\": \"password123\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/ai/analyze",
+							"raw": "{{base_url}}/api/admin/users",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"ai",
-								"analyze"
+								"admin",
+								"users"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Compare delivery failure causes between City A and City B",
+					"name": "Get System Configurations",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"query\": \"Compare delivery failure causes between Mumbai and Delhi last month\",\n  \"context\": \"comparative_analysis\",\n  \"filters\": {\n    \"cities\": [\"Mumbai\", \"Delhi\"],\n    \"date_range\": \"last_month\",\n    \"status\": \"failed\"\n  }\n}"
-						},
 						"url": {
-							"raw": "{{base_url}}/api/ai/analyze",
+							"raw": "{{base_url}}/api/admin/config",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"ai",
-								"analyze"
+								"admin",
+								"config"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Likely causes of delivery failures during festival period",
+					"name": "Update System Configuration",
 					"request": {
-						"method": "POST",
+						"method": "PUT",
 						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"query\": \"What are the likely causes of delivery failures during the festival period, and how should we prepare?\",\n  \"context\": \"festival_period_analysis\",\n  \"filters\": {\n    \"period\": \"festival\",\n    \"analysis_type\": \"predictive\"\n  }\n}"
+							"raw": "{\n  \"value\": \"60\",\n  \"description\": \"Updated session timeout\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/ai/analyze",
+							"raw": "{{base_url}}/api/admin/config/1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"ai",
-								"analyze"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Risk assessment for onboarding Client Y with 20K extra orders",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"query\": \"If we onboard Client Y with ~20,000 extra monthly orders, what new failure risks should we expect and how do we mitigate them?\",\n  \"context\": \"capacity_planning_analysis\",\n  \"filters\": {\n    \"new_client\": true,\n    \"additional_orders\": 20000,\n    \"period\": \"monthly\",\n    \"analysis_type\": \"risk_assessment\"\n  }\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/ai/analyze",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"ai",
-								"analyze"
+								"admin",
+								"config",
+								"1"
 							]
 						}
 					},
@@ -789,16 +586,6 @@
 		{
 			"key": "base_url",
 			"value": "http://localhost:8000",
-			"type": "string"
-		},
-		{
-			"key": "analytics_url",
-			"value": "http://localhost:8002",
-			"type": "string"
-		},
-		{
-			"key": "data_url",
-			"value": "http://localhost:8001",
 			"type": "string"
 		},
 		{

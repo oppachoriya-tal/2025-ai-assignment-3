@@ -20,16 +20,12 @@ Assignment_3/
 ├── dfras-backend/                 # Backend microservices
 │   ├── services/                  # Individual microservices
 │   │   ├── api-gateway/           # API Gateway (Port 8000)
-│   │   ├── analytics-service/    # Analytics Service (Port 8002)
-│   │   ├── data-service/         # Data Service (Port 8003)
-│   │   ├── ai-query-service/     # AI Query Service (Port 8004)
-│   │   ├── data-ingestion-service/ # Data Ingestion (Port 8005)
-│   │   ├── intelligence-service/ # Intelligence Service (Port 8006)
-│   │   ├── ml-service/           # ML Service (Port 8007)
-│   │   ├── notification-service/ # Notification Service (Port 8008)
-│   │   ├── correlation-service/  # Correlation Service (Port 8009)
-│   │   ├── enhanced-analytics-service/ # Enhanced Analytics (Port 8010)
-│   │   └── deep-learning-service/ # Deep Learning Service (Port 8011)
+│   │   ├── analytics-service/     # Analytics Service (Port 8002)
+│   │   ├── data-service/          # Data Service (Port 8001)
+│   │   ├── ai-query-service/      # AI Query Service (Port 8010)
+│   │   ├── data-ingestion-service/ # Data Ingestion (Port 8006)
+│   │   ├── enhanced-analytics-service/ # Enhanced Analytics (Port 8007)
+│   │   └── admin-service/        # Admin Service (Port 8008)
 │   ├── infrastructure/           # Infrastructure configurations
 │   │   ├── docker/              # Docker configurations
 │   │   │   ├── init.sql         # Database initialization with sample data
@@ -47,10 +43,11 @@ Assignment_3/
 │   ├── start-dfras.sh         # Start all services
 │   ├── stop-dfras.sh          # Stop all services
 │   └── README.md              # Infrastructure documentation
-├── dfras-docs/                # Comprehensive documentation
-│   ├── README.md              # Main documentation
-│   ├── DFRAS-Comprehensive-Solution-Document.md
+├── dfras-docs/                # Documentation
+│   ├── assignment-write-up.md # Main assignment solution document
 │   ├── API-Documentation.md   # API documentation
+│   ├── dfras-api-swagger.yaml # Swagger/OpenAPI specification
+│   ├── dfras-api-collection.postman_collection.json # Postman collection
 │   └── *.md                   # Additional documentation
 └── third-assignment-sample-data-set/ # Sample data
     ├── clients.csv
@@ -151,13 +148,13 @@ kubectl port-forward -n dfras service/frontend-service 3001:3000
 ## 📊 Features
 
 ### Core Functionality
-- **Real-time Monitoring**: Live dashboard with delivery metrics
-- **Predictive Analytics**: ML-powered failure prediction
-- **Root Cause Analysis**: Deep analysis of delivery failures
-- **Data Ingestion**: CSV upload and processing
-- **AI Query Interface**: Natural language queries
-- **Correlation Analysis**: Pattern discovery across data
-- **Sample Data Analytics**: Comprehensive sample data analysis
+- **Dashboard**: Real-time overview with delivery metrics and KPIs
+- **AI Query Analysis**: Natural language queries powered by LLM (all-MiniLM-L6-v2)
+- **Orders Management**: View and manage delivery orders
+- **Analytics**: Comprehensive data analysis and reporting
+- **Data Ingestion**: CSV file upload and sample data processing
+- **Sample Data**: Browse and analyze sample dataset
+- **Data Visualization**: Advanced charts and visualizations
 
 ### Sample Data
 The system includes comprehensive sample data from `third-assignment-sample-data-set`:
@@ -174,11 +171,15 @@ The system includes comprehensive sample data from `third-assignment-sample-data
 ### Backend Services
 Each microservice is independently deployable and follows REST API standards:
 
-- **API Gateway**: Central entry point with authentication
-- **Analytics Service**: Data analysis and reporting
-- **Data Service**: Core data operations
-- **AI Query Service**: Natural language processing with LLM (all-MiniLM-L6-v2)
-- **Data Ingestion Service**: CSV upload and sample data processing
+- **API Gateway** (Port 8000): Central entry point with JWT authentication
+- **Data Service** (Port 8001): Core data operations and sample data access
+- **Analytics Service** (Port 8002): Data analysis, dashboard metrics, and reporting
+- **Data Ingestion Service** (Port 8006): CSV upload and sample data processing
+- **Enhanced Analytics Service** (Port 8007): Advanced analytics and visualizations
+- **Admin Service** (Port 8008): User management and system configuration
+- **AI Query Service** (Port 8010): Natural language processing with LLM (all-MiniLM-L6-v2)
+- **PostgreSQL** (Port 5433): Database with comprehensive sample data
+- **Redis** (Port 6380): Session and data caching
 
 ### API Documentation
 - **Swagger/OpenAPI**: Complete API specification in `dfras-api-swagger.yaml`
@@ -198,11 +199,8 @@ React-based SPA with:
 Comprehensive documentation is available:
 
 - **assignment-write-up.md**: Complete assignment solution with problem analysis, architecture, and implementation details
-- **DELIVERY-SUMMARY.md**: Comprehensive summary of completed assignment deliverables
-- **PROJECT-ORGANIZATION.md**: Detailed project structure and organization guide
 - **dfras-api-swagger.yaml**: OpenAPI/Swagger specification for all APIs
 - **dfras-api-collection.postman_collection.json**: Postman collection for API testing
-- **dfras-docs/DFRAS-Comprehensive-Solution-Document.md**: Detailed technical solution document
 - **dfras-docs/API-Documentation.md**: Complete API endpoints and usage guide
 - **dfras-docs/DOCKER-README.md**: Docker deployment guide
 - **dfras-infrastructure/README.md**: Infrastructure setup and deployment
