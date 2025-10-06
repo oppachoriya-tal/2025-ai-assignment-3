@@ -18,7 +18,9 @@ import {
   ListItemIcon,
   Grid,
   Paper,
-  LinearProgress
+  LinearProgress,
+  Tabs,
+  Tab
 } from '@mui/material';
 import {
   ExpandMore,
@@ -50,6 +52,9 @@ interface QueryAnalysis {
     data: any;
     relevance: string;
   }>;
+  patterns_identified?: any;
+  llm_insights?: any;
+  query_entities?: any;
   root_causes: Array<{
     cause: string;
     confidence: number;
@@ -83,6 +88,7 @@ const AIQueryAnalysis: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<QueryAnalysis | null>(null);
   const [error, setError] = useState('');
+  // const [datasetTab, setDatasetTab] = useState(0); // Removed as per user request
   
   const { token } = useAuth();
   const { showError, showSuccess } = useNotification();
@@ -101,7 +107,7 @@ const AIQueryAnalysis: React.FC = () => {
 
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/api/ai/analyze`,
+        `${API_BASE_URL}/api/ai/advanced-analyze`,
         { query: query.trim() },
         {
           headers: {
@@ -112,7 +118,9 @@ const AIQueryAnalysis: React.FC = () => {
       );
 
       if (response.data.success) {
-        setAnalysis(response.data.analysis);
+        // advanced-analyze returns the full analysis shape directly
+        const payload = response.data.analysis || response.data;
+        setAnalysis(payload);
         showSuccess('Query analyzed successfully!');
       } else {
         setError(response.data.error || 'Analysis failed');
@@ -277,6 +285,46 @@ const AIQueryAnalysis: React.FC = () => {
             </CardContent>
           </Card>
 
+          {/* How this result was derived (Step-by-step) */}
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Assessment color="info" />
+                How this result was derived
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Step-by-step breakdown of query interpretation, data filtering, semantic analysis, and root cause synthesis.
+              </Typography>
+              <List dense>
+                <ListItem>
+                  <ListItemIcon sx={{ minWidth: 28 }}><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                  <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={`1) Interpret query → ${analysis.interpreted_query}`} />
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon sx={{ minWidth: 28 }}><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                  <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={`2) Extract entities → ${analysis.query_entities ? JSON.stringify(analysis.query_entities) : 'N/A'}`} />
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon sx={{ minWidth: 28 }}><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                  <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={`3) Filter dataset (orders, fleet_logs, external_factors) based on entities`} />
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon sx={{ minWidth: 28 }}><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                  <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={`4) Compute embeddings (all-MiniLM-L6-v2) and semantic similarities`} />
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon sx={{ minWidth: 28 }}><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                  <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={`5) Identify patterns ${analysis.patterns_identified ? `(types: ${Object.keys(analysis.patterns_identified).join(', ')})` : ''}`} />
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon sx={{ minWidth: 28 }}><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                  <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={`6) Synthesize root causes and recommendations`} />
+                </ListItem>
+              </List>
+              {/* Dataset used (by table) and View semantic insights sections removed as per user request. */}
+            </CardContent>
+          </Card>
+
 
           {/* Root Cause Analysis */}
           {analysis.root_causes.length > 0 && (
@@ -377,7 +425,7 @@ const AIQueryAnalysis: React.FC = () => {
                                       Cost per Incident
                                     </Typography>
                                     <Typography variant="h6" color="error.main">
-                                      ${cause.business_impact.cost_per_incident}
+                                      {cause.business_impact.cost_per_incident}
                                     </Typography>
                                   </Card>
                                 </Grid>
@@ -586,16 +634,31 @@ const AIQueryAnalysis: React.FC = () => {
           </Typography>
           <Grid container spacing={1}>
             {[
-              "Why are deliveries failing in Coimbatore? What's causing the delays?",
-              "Analyze delivery failures in Maharashtra warehouses - what are the main issues?",
-              "Why do orders fail due to 'Stockout' and 'Address not found' in Bengaluru?",
-              "Compare delivery performance between Shadowfax and In-house drivers",
-              "What's causing 'Heavy congestion' delays in Gujarat and how to optimize routes?",
-              "Analyze customer feedback patterns - why are ratings low for delayed deliveries?",
-              "Why do warehouse operations have 'Slow packing' and 'System issues'?",
-              "How do weather conditions (Rain, Fog) impact delivery success rates?",
-              "What's the correlation between traffic conditions and delivery failures?",
-              "Analyze failure patterns during strikes and holidays - how to prepare?"
+              "Top 5 failure reasons in Maharashtra last month and their impact",
+              "Why did deliveries fail in Mumbai last week? Show weather/traffic links",
+              "How do Fog and Heavy traffic affect success rates in Maharashtra?",
+              "Compare Bengaluru vs. Mumbai failure patterns for August",
+              "Which warehouses in Maharashtra drive the most failures and why?",
+              "Customer unavailability vs. address issues in Delhi last month",
+              "When do 'Address not found' failures spike in Chennai?",
+              "Geographic hotspots for failed deliveries in Gujarat (last week)",
+              "Trend of delivery success in Delhi over the last month",
+              "Drivers with highest failure correlation in Pune",
+              "Which external events correlate with failures in Karnataka?",
+              "Weather impact on deliveries in Ahmedabad yesterday",
+              "Failure reasons distribution for Surat and mitigation ideas",
+              "How do driver notes relate to traffic delays in Nagpur?",
+              "Peak hours for failures in Coimbatore last week",
+              "City-wise comparison of success rates across Maharashtra",
+              "Top failure reasons for orders > $200 in Delhi (if available)",
+              "Impact of Rain on high-density routes in Mumbai",
+              "Warehouse dispatch issues vs. stockouts in Pune",
+              "Holiday season patterns: failures in December",
+              "Why do 'Weather delay' failures spike in Chennai?",
+              "Are failures clustered around specific routes in Bengaluru?",
+              "Weekly trend: success vs failure in Mysuru",
+              "Effect of severe traffic on time-to-delivery in Mumbai",
+              "Root causes for rising failures in Ahmedabad last week"
             ].map((example, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <Chip

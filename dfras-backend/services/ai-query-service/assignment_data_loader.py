@@ -31,8 +31,7 @@ class AssignmentDataLoader:
                 break
         
         if not self.data_path:
-            logger.warning("Assignment dataset not found in any expected location")
-            self.data_path = possible_paths[0]  # Use default for error handling
+            logger.warning("Assignment dataset not found in any expected location, attempting to load anyway.")
         
         self.data = {}
         self._load_all_data()
@@ -80,7 +79,7 @@ class AssignmentDataLoader:
             self.data["warehouse_logs"] = warehouse_logs_df.to_dict('records')
             logger.info(f"Loaded {len(warehouse_logs_df)} warehouse logs from assignment dataset")
             
-            logger.info("Successfully loaded all assignment dataset files")
+            logger.info("Successfully loaded all assignment dataset files. Total orders: {len(self.data.get('orders', []))}")
             
         except Exception as e:
             logger.error(f"Error loading assignment dataset: {e}")

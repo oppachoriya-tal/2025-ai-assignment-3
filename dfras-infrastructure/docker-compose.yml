@@ -157,6 +157,8 @@ services:
       - JWT_SECRET_KEY=dfras-secret-key-change-in-production
       - DATA_SERVICE_URL=http://data-service:8001
       - ANALYTICS_SERVICE_URL=http://analytics-service:8002
+    volumes:
+      - ../third-assignment-sample-data-set:/app/third-assignment-sample-data-set
     depends_on:
       postgres:
         condition: service_healthy

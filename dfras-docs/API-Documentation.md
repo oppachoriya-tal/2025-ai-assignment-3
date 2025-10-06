@@ -379,6 +379,44 @@ DFRAS uses JWT (JSON Web Tokens) for authentication. All API endpoints (except l
 
 ---
 
+### LLM Usage Overview (linked)
+
+- See `dfras-docs/High-Level-Solution.md` → LLM Usage and LLM Usage Deep Dive for:
+  - How user queries are parsed and used
+  - Embedding model details (`all-MiniLM-L6-v2`)
+  - Analysis pipeline tied to `third-assignment-sample-data-set`
+
+LLM Pipeline (Text Diagram)
+```
+Query -> Intent/Entities -> Dataset Filter -> Embeddings (all-MiniLM-L6-v2) ->
+Similarity & Clustering -> Patterns -> RCA -> Recommendations
+```
+
+Detailed LLM Flow (Text-Based)
+```
+Frontend (query) -> API Gateway -> AI Query Service
+  -> Intent/Entity extraction
+  -> Dataset filter (orders, fleet_logs, external_factors)
+  -> Embeddings (all-MiniLM-L6-v2)
+  -> Semantic match & KMeans clustering
+  -> RCA + Recommendations + Impact
+-> API Gateway -> Frontend (JSON)
+```
+
+LLM Data Lineage (Fields → Stages)
+```
+Entities: orders.city/state/order_date, warehouses.city/state
+Filter: orders.city/state/order_date, orders.client_id/warehouse_id, external_factors.recorded_at
+Similarity: orders.failure_reason, fleet_logs.gps_delay_notes, external_factors.weather_condition/traffic_condition/event_type, feedback.comments
+Clustering: combined tokens from similarity stage
+RCA: frequencies (failure_reason), correlations (weather/traffic), geography (city/state)
+```
+
+Technical Parameters
+- Model: all-MiniLM-L6-v2 (384-dim)
+- Similarity threshold: ~0.7 (tunable)
+- KMeans: k=5, random_state=42, min samples > 5
+
 ## Enhanced Analytics APIs
 
 ### Get Enhanced Analytics Data
@@ -690,6 +728,198 @@ print(dashboard_data)
 - **AI Query Service** (Port 8010): Natural language processing with LLM (all-MiniLM-L6-v2)
 - **PostgreSQL** (Port 5433): Database with comprehensive sample data
 - **Redis** (Port 6380): Session and data caching
+
+### Component Responsibilities
+
+- API Gateway (8000)
+  - JWT auth, role/permission enforcement
+  - CORS/security headers, uniform error responses
+  - Request routing/proxy to internal services
+
+- Data Service (8001)
+  - Entities read APIs (orders, clients, drivers, warehouses)
+  - Pagination/filtering; source from PostgreSQL/sample data
+
+- Analytics Service (8002)
+  - KPIs for dashboard, failure-analysis summaries, trends
+
+- Enhanced Analytics Service (8007)
+  - Advanced analytics and visualization configs consumed by frontend
+
+- AI Query Service (8010)
+  - NL query processing using embeddings (all-MiniLM-L6-v2)
+  - RCA, recommendations, impact analysis using `third-assignment-sample-data-set`
+
+- Data Ingestion Service (8006)
+  - CSV upload, sample dataset ingestion, data quality/status
+
+- Admin Service (8008)
+  - User, role, configuration management
+
+- PostgreSQL / Redis
+  - PostgreSQL: system-of-record; Redis: caching/session store
+
+### Text-Based System Diagram
+
+```
+   React Frontend --JWT--> API Gateway (8000) --proxy--> [ Data (8001) | Analytics (8002) | AI Query (8010) | Admin (8008) | Enhanced Analytics (8007) | Data Ingestion (8006) ]
+           |                                                                                         |
+           |                                                                                         +--> PostgreSQL (5433)
+           |                                                                                         +--> Redis (6380)
+```
+
+### System Workflow Overview
+
+1) Authentication
+- Frontend → `POST /auth/login` → API Gateway → JWT issued → Frontend stores token → Subsequent calls with `Authorization: Bearer <JWT>`
+
+2) Dashboard Data
+- Frontend → `GET /api/analytics/dashboard` → API Gateway → Analytics Service → KPIs returned → API Gateway → Frontend
+
+3) AI Query Analysis
+- Frontend → `POST /api/ai/advanced-analyze` with `{ query }` → API Gateway → AI Query Service
+- AI Query Service loads/filters `third-assignment-sample-data-set`, computes embeddings (all-MiniLM-L6-v2), returns patterns/RCA/recommendations → API Gateway → Frontend
+
+4) Data Ingestion
+- Frontend/Operator → `POST /api/data-ingestion/sample-data` → API Gateway → Data Ingestion Service → status back to Frontend
+
+5) Admin Operations
+- Frontend (admin) → `/api/admin/...` → API Gateway (role check) → Admin Service → PostgreSQL
+
+### Sequence Diagrams (Text-Based)
+
+Auth/Login Flow
+```
+User -> Frontend: Enter credentials
+Frontend -> API Gateway: POST /auth/login { username, password }
+API Gateway -> API Gateway: Validate credentials
+API Gateway -> Frontend: { access_token (JWT), user, role }
+Frontend -> Frontend: Store JWT
+```
+
+Dashboard Metrics Flow
+```
+Frontend -> API Gateway: GET /api/analytics/dashboard (Authorization: Bearer JWT)
+API Gateway -> Analytics Service: GET /api/analytics/dashboard
+Analytics Service -> API Gateway: KPIs/metrics JSON
+API Gateway -> Frontend: KPIs/metrics JSON
+```
+
+AI Query Flow
+```
+Frontend -> API Gateway: POST /api/ai/advanced-analyze { query }
+API Gateway -> AI Query Service: forward request
+AI Query Service -> AssignmentDataLoader: load/Filter sample dataset
+AI Query Service -> all-MiniLM-L6-v2: embed texts (local model)
+AI Query Service -> AI Query Service: find patterns, clusters, RCA
+AI Query Service -> API Gateway: response JSON (patterns, RCA, recs, impact)
+API Gateway -> Frontend: response JSON
+```
+
+Data Ingestion Flow
+```
+Operator -> API Gateway: POST /api/data-ingestion/sample-data
+API Gateway -> Data Ingestion Service: Trigger sample dataset ingestion
+Data Ingestion Service -> PostgreSQL: Upsert data
+Data Ingestion Service -> API Gateway: status
+API Gateway -> Operator: status JSON
+```
+
+### Tech Stack by Component
+
+- API Gateway: Python, FastAPI, httpx, JWT, CORS
+- Data Service: Python, FastAPI, SQLAlchemy (optional), PostgreSQL
+- Analytics Service: Python, FastAPI, pandas, numpy
+- Enhanced Analytics Service: Python, FastAPI
+- AI Query Service: Python, FastAPI, pandas, numpy, scikit-learn, sentence-transformers (`all-MiniLM-L6-v2`)
+- Data Ingestion Service: Python, FastAPI, pandas
+- Admin Service: Python, FastAPI
+- Database/Cache: PostgreSQL, Redis
+- Frontend: React, TypeScript, Jest/RTL
+
+### Deployment & Environment (Technical)
+
+- Kubernetes Manifests: `dfras-backend/infrastructure/kubernetes/*.yaml`
+- Environment Variables (Gateway): `JWT_SECRET_KEY`, `*_SERVICE_URL`
+- Environment Variables (AI Query): `DATABASE_URL`, `*SERVICE_URL`
+- Health Endpoints: `/health` on each service
+- Security Headers: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy
+- CORS: Allow-all in dev; restrict per domain in prod
+
+### Dataset Schema (Used by AI Query Service)
+
+```
+orders(id, client_id, warehouse_id, driver_id, city, state, status, failure_reason, order_date, delivery_time, order_value)
+fleet_logs(log_id, order_id, driver_id, departure_time, arrival_time, route_distance_km, gps_delay_notes)
+external_factors(factor_id, recorded_at, city, state, weather_condition, traffic_condition, event_type)
+... (see High-Level-Solution for the full list)
+```
+
+---
+
+## Runbook (API Quick Start)
+
+Startup (Compose)
+```
+cd /Users/opachoriya/Project/AI_Assignments/Assignment_3/dfras-infrastructure
+./start-dfras.sh
+```
+
+Startup (Kubernetes)
+```
+cd /Users/opachoriya/Project/AI_Assignments/Assignment_3/dfras-backend/infrastructure/kubernetes
+./deploy.sh
+```
+
+Health Checks
+```
+curl http://localhost:8000/health
+curl http://localhost:8002/health
+curl http://localhost:8010/health
+```
+
+Smoke Tests
+```
+# Login -> TOKEN
+TOKEN=$(curl -s -X POST http://localhost:8000/auth/login -H "Content-Type: application/json" -d '{"username":"admin","password":"admin123"}' | jq -r .access_token)
+
+# Dashboard
+curl -s -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/analytics/dashboard | jq .
+
+# AI Query
+curl -s -X POST http://localhost:8000/api/ai/advanced-analyze -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"query":"Top causes of failures in CA last month"}' | jq .
+```
+
+### Performance Notes
+
+Expected Latency
+- Auth: 20-40 ms
+- Analytics: 50-120 ms
+- AI Advanced Analyze: 200-600 ms (depends on dataset size and cache)
+
+Cache Benefits
+- Precomputed embeddings and Redis caching reduce AI latency by ~30-50%
+
+Quick Load Test (k6)
+```
+// ai-api-k6.js
+import http from 'k6/http';
+import { sleep } from 'k6';
+
+export const options = { vus: 10, duration: '20s' };
+
+export default function () {
+  const login = http.post('http://localhost:8000/auth/login', JSON.stringify({
+    username: 'admin', password: 'admin123'
+  }), { headers: { 'Content-Type': 'application/json' } });
+  const token = login.json('access_token');
+  http.get('http://localhost:8000/api/analytics/dashboard', { headers: { 'Authorization': `Bearer ${token}` } });
+  http.post('http://localhost:8000/api/ai/advanced-analyze', JSON.stringify({ query: 'Top causes of failures in CA last month' }), { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } });
+  sleep(1);
+}
+```
+Run: `k6 run ai-api-k6.js`
+
 
 ### Direct Service Access
 While the API Gateway is the recommended entry point, you can also access services directly:

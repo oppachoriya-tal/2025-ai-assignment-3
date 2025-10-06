@@ -1,3 +1,26 @@
+Simple Aggregator Demo
+----------------------
+
+Run the local sample aggregator (no UI required) to demonstrate outcomes:
+
+1) Last month, Maharashtra
+   python dfras-backend/services/ai-query-service/tools/sample_aggregator.py --scope "last month" --location "Maharashtra"
+
+2) Last week, Mumbai
+   python dfras-backend/services/ai-query-service/tools/sample_aggregator.py --scope "last week" --location "Mumbai"
+
+3) Full dataset
+   python dfras-backend/services/ai-query-service/tools/sample_aggregator.py --scope "all"
+
+4) Batch 25 presets (export to JSON)
+   python dfras-backend/services/ai-query-service/tools/sample_aggregator.py --batch-examples --export-json batch_out.json
+
+Outputs:
+- Totals (orders, failed, success rate)
+- Top failure reasons
+- Weather/traffic counts
+- Small correlated sample (failed orders with external factors)
+
 Business Challenge: Delivery failures and delays are one of the biggest drivers of customer dissatisfaction and revenue leakage in logistics. While current systems can report on how many deliveries failed, they provide little clarity on why they failed. Operations managers must manually investigate across siloed systems — order logs, fleet reports, warehouse records, and customer complaints — making the process reactive, time-consuming, and error-prone.
 
 Problem in Detail:
@@ -37,16 +60,30 @@ Expected Output:
 
 · Email the output details: A GitHub repo link, a folder link containing the doc and recording.
 
-Sample use cases:
+Descriptive Sample Queries (use with UI or aggregator):
 
-1. Why were deliveries delayed in city X yesterday?
-
-2. Why did Client X’s orders fail in the past week?
-
-3. Explain the top reasons for delivery failures linked to Warehouse B in August?
-
-4. Compare delivery failure causes between City A and City B last month?
-
-5. What are the likely causes of delivery failures during the festival period, and how should we prepare?
-
-6. If we onboard Client Y with ~20,000 extra monthly orders, what new failure risks should we expect and how do we mitigate them?
+1) Top 5 failure reasons in Maharashtra last month and their impact
+2) Why did deliveries fail in Mumbai last week? Show weather/traffic links
+3) How do Fog and Heavy traffic affect success rates in Maharashtra?
+4) Compare Bengaluru vs. Mumbai failure patterns for August
+5) Which warehouses in Maharashtra drive the most failures and why?
+6) Customer unavailability vs. address issues in Delhi last month
+7) When do 'Address not found' failures spike in Chennai?
+8) Geographic hotspots for failed deliveries in Gujarat (last week)
+9) Trend of delivery success in Delhi over the last month
+10) Drivers with highest failure correlation in Pune
+11) Which external events correlate with failures in Karnataka?
+12) Weather impact on deliveries in Ahmedabad yesterday
+13) Failure reasons distribution for Surat and mitigation ideas
+14) How do driver notes relate to traffic delays in Nagpur?
+15) Peak hours for failures in Coimbatore last week
+16) City-wise comparison of success rates across Maharashtra
+17) Top failure reasons for orders > $200 in Delhi (if available)
+18) Impact of Rain on high-density routes in Mumbai
+19) Warehouse dispatch issues vs. stockouts in Pune
+20) Holiday season patterns: failures in December
+21) Why do 'Weather delay' failures spike in Chennai?
+22) Are failures clustered around specific routes in Bengaluru?
+23) Weekly trend: success vs failure in Mysuru
+24) Effect of severe traffic on time-to-delivery in Mumbai
+25) Root causes for rising failures in Ahmedabad last week
