@@ -397,7 +397,7 @@ async def advanced_analyze_query(request: QueryRequest):
                 "embedding_based_patterns": "Enabled",
                 "precomputed_embeddings": "Enabled",
                 "intelligent_text_understanding": "Enabled",
-                "llm_model": "all-MiniLM-L6-v2",
+                "llm_model": ai_analyzer.enhanced_engine.sentence_model_name or "unavailable",
                 "data_source": "third-assignment-sample-data-set"
             }
         }
@@ -411,7 +411,7 @@ async def get_model_info():
     """Get information about the LLM model and capabilities"""
     try:
         return {
-            "model_name": "all-MiniLM-L6-v2",
+            "model_name": ai_analyzer.enhanced_engine.sentence_model_name or "unavailable",
             "model_type": "Sentence Transformer",
             "capabilities": [
                 "Semantic similarity analysis",
@@ -469,7 +469,7 @@ async def semantic_search(query: str = Query(..., description="Search query for 
             "semantic_insights": llm_insights.get("semantic_analysis", {}),
             "similarity_threshold": 0.7,
             "total_matches": len(semantic_patterns),
-            "model_used": "all-MiniLM-L6-v2",
+            "model_used": ai_analyzer.enhanced_engine.sentence_model_name or "unavailable",
             "data_source": "third-assignment-sample-data-set"
         }
         

@@ -55,6 +55,10 @@ interface QueryAnalysis {
   patterns_identified?: any;
   llm_insights?: any;
   query_entities?: any;
+  model_info?: {
+    sentence_transformer?: string;
+    [key: string]: any;
+  };
   root_causes: Array<{
     cause: string;
     confidence: number;
@@ -277,6 +281,19 @@ const AIQueryAnalysis: React.FC = () => {
                     <strong>Processing Time:</strong> {analysis.processing_time_ms}ms
                   </Typography>
                 </Grid>
+                <Grid item xs={12} md={12}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>LLM Model:</strong>
+                    </Typography>
+                    <Chip 
+                      label={analysis.model_info?.sentence_transformer || 'Unavailable'}
+                      color="default"
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Box>
+                </Grid>
               </Grid>
 
               <Typography variant="body2" color="text.secondary">
@@ -310,7 +327,7 @@ const AIQueryAnalysis: React.FC = () => {
                 </ListItem>
                 <ListItem>
                   <ListItemIcon sx={{ minWidth: 28 }}><CheckCircle color="success" fontSize="small" /></ListItemIcon>
-                  <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={`4) Compute embeddings (all-MiniLM-L6-v2) and semantic similarities`} />
+                  <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={`4) Compute embeddings (${analysis.model_info?.sentence_transformer || 'LLM'}) and semantic similarities`} />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon sx={{ minWidth: 28 }}><CheckCircle color="success" fontSize="small" /></ListItemIcon>
@@ -324,6 +341,69 @@ const AIQueryAnalysis: React.FC = () => {
               {/* Dataset used (by table) and View semantic insights sections removed as per user request. */}
             </CardContent>
           </Card>
+
+          {/* LLM Insights */}
+          {analysis.llm_insights && (
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Insights color="secondary" />
+                  LLM Insights
+                </Typography>
+                {/* Semantic Relationships */}
+                {analysis.llm_insights.semantic_analysis?.semantic_relationships && analysis.llm_insights.semantic_analysis.semantic_relationships.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>Top Semantic Relationships</Typography>
+                    <List dense>
+                      {analysis.llm_insights.semantic_analysis.semantic_relationships.slice(0,5).map((rel: any, idx: number) => (
+                        <ListItem key={idx} sx={{ py: 0.5 }}>
+                          <ListItemText primary={`${rel.concept} (${(rel.similarity * 100).toFixed(1)}%)`} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+                {/* Predictive Insights */}
+                {analysis.llm_insights.predictive_insights && (
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>Predictive Insights</Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={4}>
+                        <Paper sx={{ p: 2 }}>
+                          <Typography variant="caption" color="text.secondary">Failure Probability</Typography>
+                          <Typography variant="h6">{analysis.llm_insights.predictive_insights.failure_probability?.toFixed(1)}%</Typography>
+                        </Paper>
+                      </Grid>
+                      <Grid item xs={12} md={8}>
+                        <Paper sx={{ p: 2 }}>
+                          <Typography variant="caption" color="text.secondary">Risk Factors</Typography>
+                          <List dense>
+                            {(analysis.llm_insights.predictive_insights.risk_factors || []).slice(0,3).map((rf: any, idx: number) => (
+                              <ListItem key={idx} sx={{ py: 0.5 }}>
+                                <ListItemText primary={`${rf.factor} — ${rf.impact || ''}`} secondary={rf.risk_level ? `Risk: ${rf.risk_level}` : ''} />
+                              </ListItem>
+                            ))}
+                          </List>
+                        </Paper>
+                      </Grid>
+                    </Grid>
+                    {analysis.llm_insights.predictive_insights.future_recommendations && analysis.llm_insights.predictive_insights.future_recommendations.length > 0 && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="caption" color="text.secondary">Future Recommendations</Typography>
+                        <List dense>
+                          {analysis.llm_insights.predictive_insights.future_recommendations.slice(0,5).map((fr: string, idx: number) => (
+                            <ListItem key={idx} sx={{ py: 0.5 }}>
+                              <ListItemText primary={fr} />
+                            </ListItem>
+                          ))}
+                        </List>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
 
           {/* Root Cause Analysis */}

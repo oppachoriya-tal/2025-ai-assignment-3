@@ -550,23 +550,23 @@ Code References
 │                              DFRAS SYSTEM ARCHITECTURE                          │
 └─────────────────────────────────────────────────────────────────────────────────┘
 
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Order Data    │    │  Fleet Logs     │    │Warehouse Data   │    │ Customer        │
-│   (Structured)  │    │ (GPS + Notes)   │    │ (Inventory +    │    │ Feedback        │
-│                 │    │                 │    │ Dispatch Times) │    │ (Unstructured)  │
-└─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
-          │                      │                      │                      │
-          └──────────────────────┼──────────────────────┼──────────────────────┘
-                                 │                      │
-                    ┌─────────────▼──────────────────────▼─────────────┐
-                    │           DATA INGESTION SERVICE                 │
-                    │  • CSV Upload & Validation                       │
-                    │  • Data Quality Checks                           │
-                    │  • Schema Mapping                                │
-                    │  • Sample Data Population                        │
-                    └────────────────┬─────────────────────────────────┘
-                                      │
-                    ┌────────────────▼─────────────────────────────────┐
+┌────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Order Data   │    │  Fleet Logs     │    │Warehouse Data   │    │ Customer        │
+│   (Structured) │    │ (GPS + Notes)   │    │ (Inventory +    │    │ Feedback        │
+│                │    │                 │    │ Dispatch Times) │    │ (Unstructured)  │
+└────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
+         │                      │                      │                      │
+         └──────────────────────┼──────────────────────┼──────────────────────┘
+                                │                      │
+                  ┌─────────────▼──────────────────────▼─────────────┐
+                  │           DATA INGESTION SERVICE                 │
+                  │  • CSV Upload & Validation                       │
+                  │  • Data Quality Checks                           │
+                  │  • Schema Mapping                                │
+                  │  • Sample Data Population                        │
+                  └───────────────┬──────────────────────────────────┘
+                                  │
+                    ┌─────────────▼────────────────────────────────────┐
                     │            POSTGRESQL DATABASE                   │
                     │  • Orders, Clients, Warehouses, Drivers          │
                     │  • Fleet Logs, External Factors                  │
@@ -584,35 +584,35 @@ Code References
           ┌───────────────────────────┼───────────────────────────┐
           │                           │                           │
           ▼                           ▼                           ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   ANALYTICS     │    │   AI QUERY      │    │   DATA SERVICE  │
-│   SERVICE       │    │   SERVICE       │    │                 │
-│                 │    │                 │    │                 │
-│ • Dashboard     │    │ • LLM Engine    │    │ • Order Mgmt    │  
-│   Metrics       │    │   (all-MiniLM-  │    │ • Client Mgmt   │
-│ • Failure       │    │   L6-v2)        │    │ • Driver Mgmt   │
-│   Analysis      │    │ • Natural       │    │ • Warehouse     │
-│ • Sample Data   │    │   Language      │    │   Operations    │
-│   Processing    │    │   Processing    │    │                 │
-│ • Correlation   │    │ • Text          │    │                 │
-│   Engine        │    │   Embedding     │    │                 │
-│                 │    │ • Pattern       │    │                 │
-│                 │    │   Recognition   │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+      ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+      │   ANALYTICS     │    │   AI QUERY      │    │   DATA SERVICE  │
+      │   SERVICE       │    │   SERVICE       │    │                 │
+      │                 │    │                 │    │                 │
+      │ • Dashboard     │    │ • LLM Engine    │    │ • Order Mgmt    │  
+      │   Metrics       │    │   (all-MiniLM-  │    │ • Client Mgmt   │
+      │ • Failure       │    │   L6-v2)        │    │ • Driver Mgmt   │
+      │   Analysis      │    │ • Natural       │    │ • Warehouse     │
+      │ • Sample Data   │    │   Language      │    │   Operations    │
+      │   Processing    │    │   Processing    │    │                 │
+      │ • Correlation   │    │ • Text          │    │                 │
+      │   Engine        │    │   Embedding     │    │                 │
+      │                 │    │ • Pattern       │    │                 │
+      │                 │    │   Recognition   │    │                 │
+      └─────────────────┘    └─────────────────┘    └─────────────────┘
           │                           │                           │
           └───────────────────────────┼───────────────────────────┘
                                       │
                     ┌─────────────────▼─────────────────────────────────┐
                     │              REACT FRONTEND                       │
-                    │  • Dashboard & Analytics                         │
-                    │  • Order Management                              │
-                    │  • Data Ingestion Interface                      │
-                    │  • AI Query Interface                            │
-                    │  • Sample Data Visualization                     │
+                    │  • Dashboard & Analytics                          │
+                    │  • Order Management                               │
+                    │  • Data Ingestion Interface                       │
+                    │  • AI Query Interface                             │
+                    │  • Sample Data Visualization                      │
                     └───────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              EXTERNAL DATA SOURCES                            │
+│                              EXTERNAL DATA SOURCES                              │
 └─────────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐

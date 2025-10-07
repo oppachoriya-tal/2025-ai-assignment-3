@@ -77,7 +77,7 @@
           |               |   |               |
           v               v   v               v
    +------+-------+  +----+---+-----+  +------+-------+  +-----------------+
-   |  Data Service|  | Analytics     |  | AI Query     |  | Admin Service   |
+   |  Data Service|  | Analytics    |  | AI Query     |  | Admin Service   |
    |   8001       |  | Service 8002 |  | Service 8010 |  | 8008            |
    +------+-------+  +----+---+-----+  +------+-------+  +---------+-------+
           |                 |                 |                    |

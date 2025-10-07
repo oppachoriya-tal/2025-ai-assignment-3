@@ -145,6 +145,7 @@ services:
       retries: 3
 
   # AI Query Analysis Service
+  
   ai-query-service:
     build:
       context: ../dfras-backend
@@ -157,6 +158,10 @@ services:
       - JWT_SECRET_KEY=dfras-secret-key-change-in-production
       - DATA_SERVICE_URL=http://data-service:8001
       - ANALYTICS_SERVICE_URL=http://analytics-service:8002
+      - AI_SIMILARITY_THRESHOLD=0.72
+      - AI_KMEANS_CLUSTERS=6
+      - BUSINESS_INR_RATE=83.0
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt  # ✅ Added line
     volumes:
       - ../third-assignment-sample-data-set:/app/third-assignment-sample-data-set
     depends_on:
@@ -167,6 +172,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
 
   # Admin Service
   admin-service:
