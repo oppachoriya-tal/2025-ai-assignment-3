@@ -378,8 +378,8 @@ const AIQueryAnalysis: React.FC = () => {
                               <Assessment color="info" />
                               Evidence & Analysis
                             </Typography>
-                            <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
-                              <Typography variant="body2">
+                            <Paper sx={{ p: 2, bgcolor: 'grey.50', border: '1px solid', borderColor: 'primary.light' }}>
+                              <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
                                 {cause.evidence}
                               </Typography>
                             </Paper>
@@ -392,13 +392,13 @@ const AIQueryAnalysis: React.FC = () => {
                                 <Timeline color="warning" />
                                 Contributing Factors ({cause.contributing_factors.length})
                               </Typography>
-                              <Grid container spacing={1}>
+                              <Grid container spacing={2}>
                                 {Array.isArray(cause.contributing_factors) ? cause.contributing_factors.map((factor, factorIndex) => (
                                   <Grid item xs={12} sm={6} key={factorIndex}>
-                                    <Card variant="outlined" sx={{ p: 1 }}>
-                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Warning color="warning" fontSize="small" />
-                                        <Typography variant="body2">
+                                    <Card variant="outlined" sx={{ p: 2, border: '1px solid', borderColor: 'warning.light', bgcolor: 'warning.light', bgcolor: 'rgba(255, 152, 0, 0.05)' }}>
+                                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                                        <Warning color="warning" fontSize="small" sx={{ mt: 0.5 }} />
+                                        <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
                                           {factor}
                                         </Typography>
                                       </Box>
@@ -420,31 +420,34 @@ const AIQueryAnalysis: React.FC = () => {
                               </Typography>
                               <Grid container spacing={2}>
                                 <Grid item xs={12} sm={4}>
-                                  <Card variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                                    <Typography variant="caption" color="text.secondary">
+                                  <Card variant="outlined" sx={{ p: 2, textAlign: 'center', border: '1px solid', borderColor: 'error.light', bgcolor: 'rgba(244, 67, 54, 0.05)' }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                                       Cost per Incident
                                     </Typography>
-                                    <Typography variant="h6" color="error.main">
-                                      {cause.business_impact.cost_per_incident}
+                                    <Typography variant="h6" color="error.main" sx={{ fontWeight: 700 }}>
+                                      {typeof cause.business_impact.cost_per_incident === 'string' ? 
+                                        cause.business_impact.cost_per_incident : 
+                                        `INR ${cause.business_impact.cost_per_incident}`
+                                      }
                                     </Typography>
                                   </Card>
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
-                                  <Card variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                                    <Typography variant="caption" color="text.secondary">
+                                  <Card variant="outlined" sx={{ p: 2, textAlign: 'center', border: '1px solid', borderColor: 'warning.light', bgcolor: 'rgba(255, 152, 0, 0.05)' }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                                       Customer Satisfaction Impact
                                     </Typography>
-                                    <Typography variant="h6" color="warning.main">
+                                    <Typography variant="h6" color="warning.main" sx={{ fontWeight: 700 }}>
                                       {(cause.business_impact.customer_satisfaction_impact * 100).toFixed(1)}%
                                     </Typography>
                                   </Card>
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
-                                  <Card variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                                    <Typography variant="caption" color="text.secondary">
+                                  <Card variant="outlined" sx={{ p: 2, textAlign: 'center', border: '1px solid', borderColor: 'error.light', bgcolor: 'rgba(244, 67, 54, 0.05)' }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                                       Operational Efficiency Loss
                                     </Typography>
-                                    <Typography variant="h6" color="error.main">
+                                    <Typography variant="h6" color="error.main" sx={{ fontWeight: 700 }}>
                                       {(cause.business_impact.operational_efficiency_loss * 100).toFixed(1)}%
                                     </Typography>
                                   </Card>
