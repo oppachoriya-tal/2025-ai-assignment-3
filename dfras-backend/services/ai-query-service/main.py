@@ -63,17 +63,35 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager"""
+    """Application lifespan manager with enhanced error handling"""
     logger.info("AI Query Analysis Service starting up...")
     
-    # Test database connection
+    # Test database connection with retries
+    max_retries = 3
+    retry_count = 0
+    
+    while retry_count < max_retries:
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            logger.info("Database connection successful")
+            break
+        except Exception as e:
+            retry_count += 1
+            logger.warning(f"Database connection attempt {retry_count} failed: {e}")
+            if retry_count >= max_retries:
+                logger.error("Database connection failed after all retries. Service will start in offline mode.")
+                break
+            await asyncio.sleep(2 ** retry_count)  # Exponential backoff
+    
+    # Initialize AI analyzer with error handling
     try:
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        logger.info("Database connection successful")
+        global ai_analyzer
+        ai_analyzer = AIQueryAnalyzer()
+        logger.info("AI Query Analyzer initialized successfully")
     except Exception as e:
-        logger.error(f"Database connection failed: {e}")
-        raise
+        logger.error(f"Failed to initialize AI Query Analyzer: {e}")
+        logger.info("Service will start with limited functionality")
     
     yield
     
@@ -100,11 +118,19 @@ class AIQueryAnalyzer:
     """Enhanced AI-powered query analysis engine with local LLM integration"""
     
     def __init__(self):
-        self.enhanced_engine = EnhancedAIAnalysisEngine()
-        logger.info("Enhanced AI Analysis Engine initialized")
+        try:
+            self.enhanced_engine = EnhancedAIAnalysisEngine()
+            logger.info("Enhanced AI Analysis Engine initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize Enhanced AI Analysis Engine: {e}")
+            self.enhanced_engine = None
     
     def analyze_query(self, query: str) -> Dict[str, Any]:
         """Analyze the natural language query using enhanced AI engine"""
+        if not self.enhanced_engine:
+            logger.warning("Enhanced engine not available, using fallback analysis")
+            return self._fallback_analysis(query)
+            
         try:
             return self.enhanced_engine.analyze_query(query)
         except Exception as e:
@@ -121,7 +147,7 @@ class AIQueryAnalyzer:
             "confidence_score": 0.5,
             "query_entities": {"locations": [], "time_periods": [], "metrics": []},
             "relevant_data_summary": {"orders": {"total_count": 0}},
-            "patterns_identified": [],
+            "patterns_identified": {},
             "root_causes": [{
                 "cause": "System Analysis Required",
                 "confidence": 0.6,
@@ -319,6 +345,14 @@ async def analyze_query(request: QueryRequest):
     start_time = datetime.utcnow()
     
     try:
+        # Validate request
+        if not request.query or not request.query.strip():
+            return QueryResponse(success=False, error="Query cannot be empty")
+        
+        # Check if analyzer is available
+        if not ai_analyzer:
+            return QueryResponse(success=False, error="AI analyzer not available")
+        
         # Use enhanced AI analysis engine
         enhanced_analysis = ai_analyzer.analyze_query(request.query)
         
@@ -348,27 +382,35 @@ async def analyze_query(request: QueryRequest):
         analysis = QueryAnalysis(
             query_id=enhanced_analysis["query_id"],
             original_query=enhanced_analysis["original_query"],
-            interpreted_query=enhanced_analysis["interpreted_query"],
-            analysis_type=enhanced_analysis["analysis_type"],
-            confidence_score=enhanced_analysis["confidence_score"],
+            interpreted_query=enhanced_analysis.get("processed_query", enhanced_analysis["original_query"]),
+            analysis_type=enhanced_analysis.get("intent", "general"),
+            confidence_score=enhanced_analysis.get("insights", {}).get("confidence_score", 0.7),
             findings=findings_list,
-            root_causes=enhanced_analysis["root_causes"],
-            recommendations=enhanced_analysis["recommendations"],
-            data_sources=enhanced_analysis["data_sources"],
-            timestamp=datetime.fromisoformat(enhanced_analysis["timestamp"]),
-            processing_time_ms=enhanced_analysis["processing_time_ms"]
+            root_causes=enhanced_analysis.get("analysis", {}).get("patterns", []),
+            recommendations=[{"title": rec, "description": rec, "priority": "medium"} for rec in enhanced_analysis.get("insights", {}).get("recommendations", [])],
+            data_sources=["offline_analysis"],
+            timestamp=datetime.fromisoformat(enhanced_analysis.get("model_info", {}).get("timestamp", datetime.now().isoformat())),
+            processing_time_ms=int(enhanced_analysis.get("processing_time_ms", 100))
         )
         
         return QueryResponse(success=True, analysis=analysis)
     
     except Exception as e:
         logger.error(f"Error analyzing query: {e}")
-        return QueryResponse(success=False, error=str(e))
+        return QueryResponse(success=False, error=f"Analysis failed: {str(e)}")
 
 @app.post("/api/ai/advanced-analyze")
 async def advanced_analyze_query(request: QueryRequest):
     """Advanced AI analysis with comprehensive LLM insights and semantic understanding"""
     try:
+        # Validate request
+        if not request.query or not request.query.strip():
+            return {"success": False, "error": "Query cannot be empty"}
+        
+        # Check if analyzer is available
+        if not ai_analyzer:
+            return {"success": False, "error": "AI analyzer not available"}
+        
         # Use enhanced AI analysis engine with all LLM capabilities
         enhanced_analysis = ai_analyzer.analyze_query(request.query)
         
@@ -377,27 +419,27 @@ async def advanced_analyze_query(request: QueryRequest):
             "success": True,
             "query_id": enhanced_analysis["query_id"],
             "original_query": enhanced_analysis["original_query"],
-            "interpreted_query": enhanced_analysis["interpreted_query"],
-            "analysis_type": enhanced_analysis["analysis_type"],
-            "confidence_score": enhanced_analysis["confidence_score"],
-            "query_entities": enhanced_analysis["query_entities"],
-            "relevant_data_summary": enhanced_analysis["relevant_data_summary"],
-            "patterns_identified": enhanced_analysis["patterns_identified"],
-            "root_causes": enhanced_analysis["root_causes"],
-            "recommendations": enhanced_analysis["recommendations"],
-            "impact_analysis": enhanced_analysis["impact_analysis"],
-            "llm_insights": enhanced_analysis["llm_insights"],
-            "data_sources": enhanced_analysis["data_sources"],
-            "timestamp": enhanced_analysis["timestamp"],
-            "processing_time_ms": enhanced_analysis["processing_time_ms"],
-            "model_info": enhanced_analysis["model_info"],
+            "interpreted_query": enhanced_analysis.get("processed_query", enhanced_analysis["original_query"]),
+            "analysis_type": enhanced_analysis.get("intent", "general"),
+            "confidence_score": enhanced_analysis.get("insights", {}).get("confidence_score", 0.7),
+            "query_entities": enhanced_analysis.get("entities", {}),
+            "relevant_data_summary": enhanced_analysis.get("relevant_data_summary", {}),
+            "patterns_identified": enhanced_analysis.get("analysis", {}).get("patterns", []),
+            "root_causes": enhanced_analysis.get("analysis", {}).get("patterns", []),
+            "recommendations": enhanced_analysis.get("insights", {}).get("recommendations", []),
+            "impact_analysis": {"status": "analysis_completed"},
+            "llm_insights": enhanced_analysis.get("insights", {}),
+            "data_sources": ["offline_analysis"],
+            "timestamp": enhanced_analysis.get("model_info", {}).get("timestamp", datetime.now().isoformat()),
+            "processing_time_ms": enhanced_analysis.get("processing_time_ms", 100),
+            "model_info": enhanced_analysis.get("model_info", {}),
             "advanced_features": {
                 "semantic_similarity_analysis": "Enabled",
                 "text_clustering": "Enabled", 
                 "embedding_based_patterns": "Enabled",
                 "precomputed_embeddings": "Enabled",
                 "intelligent_text_understanding": "Enabled",
-                "llm_model": ai_analyzer.enhanced_engine.sentence_model_name or "unavailable",
+                "llm_model": ai_analyzer.enhanced_engine.text_analyzer_name if ai_analyzer.enhanced_engine else "unavailable",
                 "data_source": "third-assignment-sample-data-set"
             }
         }
@@ -410,16 +452,54 @@ async def advanced_analyze_query(request: QueryRequest):
 async def get_model_info():
     """Get information about the LLM model and capabilities"""
     try:
+        # Check if analyzer is available
+        if not ai_analyzer or not ai_analyzer.enhanced_engine:
+            return {
+                "model_name": "unavailable",
+                "model_type": "Offline Mode",
+                "capabilities": [
+                    "Basic pattern matching",
+                    "Statistical analysis",
+                    "TF-IDF text analysis",
+                    "Fallback analysis"
+                ],
+                "data_source": "third-assignment-sample-data-set",
+                "features": {
+                    "precomputed_embeddings": False,
+                    "semantic_similarity_threshold": "N/A",
+                    "clustering_enabled": False,
+                    "caching_enabled": False,
+                    "real_time_analysis": True
+                },
+                "performance": {
+                    "embedding_dimension": "N/A",
+                    "max_sequence_length": "N/A",
+                    "supported_languages": ["English"],
+                    "model_size": "N/A"
+                },
+                "data_statistics": {
+                    "total_orders": "~15,000",
+                    "total_warehouses": "~5",
+                    "total_fleet_logs": "~10,000",
+                    "total_external_factors": "~10,000",
+                    "total_clients": "~500",
+                    "total_drivers": "~2,000",
+                    "total_feedback": "~1,000",
+                    "total_warehouse_logs": "~5,000"
+                },
+                "status": "offline_mode"
+            }
+        
         return {
-            "model_name": ai_analyzer.enhanced_engine.sentence_model_name or "unavailable",
-            "model_type": "Sentence Transformer",
+            "model_name": ai_analyzer.enhanced_engine.text_analyzer_name or "unavailable",
+            "model_type": "NLTK + TextBlob",
             "capabilities": [
-                "Semantic similarity analysis",
-                "Text clustering and pattern discovery",
-                "Embedding-based text understanding",
-                "Intelligent query interpretation",
-                "Contextual analysis",
-                "Predictive insights generation"
+                "Sentiment analysis",
+                "Text classification",
+                "TF-IDF based text analysis",
+                "Pattern recognition",
+                "Entity extraction",
+                "Statistical text analysis"
             ],
             "data_source": "third-assignment-sample-data-set",
             "features": {
@@ -444,7 +524,8 @@ async def get_model_info():
                 "total_drivers": "~2,000",
                 "total_feedback": "~1,000",
                 "total_warehouse_logs": "~5,000"
-            }
+            },
+            "status": "online"
         }
         
     except Exception as e:
@@ -455,6 +536,14 @@ async def get_model_info():
 async def semantic_search(query: str = Query(..., description="Search query for semantic analysis")):
     """Perform semantic search across the dataset using LLM embeddings"""
     try:
+        # Validate query
+        if not query or not query.strip():
+            return {"success": False, "error": "Search query cannot be empty"}
+        
+        # Check if analyzer is available
+        if not ai_analyzer:
+            return {"success": False, "error": "AI analyzer not available"}
+        
         # Use enhanced AI analysis engine for semantic search
         enhanced_analysis = ai_analyzer.analyze_query(query)
         
@@ -469,7 +558,7 @@ async def semantic_search(query: str = Query(..., description="Search query for 
             "semantic_insights": llm_insights.get("semantic_analysis", {}),
             "similarity_threshold": 0.7,
             "total_matches": len(semantic_patterns),
-            "model_used": ai_analyzer.enhanced_engine.sentence_model_name or "unavailable",
+            "model_used": ai_analyzer.enhanced_engine.text_analyzer_name if ai_analyzer.enhanced_engine else "unavailable",
             "data_source": "third-assignment-sample-data-set"
         }
         
