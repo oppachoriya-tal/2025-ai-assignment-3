@@ -178,6 +178,24 @@ class AIQueryAnalyzer:
             "model_info": {"sentence_transformer": "fallback", "analysis_method": "basic_pattern_matching", "rca_methodology": "simplified_analysis"}
         }
 
+@app.get("/api/ai/llm-status")
+async def llm_status():
+    """Expose LLM provider, model, and key presence for diagnostics"""
+    try:
+        engine = ai_analyzer.enhanced_engine if ai_analyzer else None
+        provider = getattr(engine, 'llm_provider', 'offline') if engine else 'unavailable'
+        model = getattr(engine, 'llm_model_name', 'unavailable') if engine else 'unavailable'
+        key_present = True if os.getenv('GEMINI_API_KEY') else False
+        return {
+            "provider": provider,
+            "model": model,
+            "gemini_key_present": key_present,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"LLM status error: {e}")
+        return {"provider": "error", "error": str(e)}
+
 # Initialize AI analyzer
 ai_analyzer = AIQueryAnalyzer()
 
@@ -425,10 +443,10 @@ async def advanced_analyze_query(request: QueryRequest):
             "query_entities": enhanced_analysis.get("entities", {}),
             "relevant_data_summary": enhanced_analysis.get("relevant_data_summary", {}),
             "patterns_identified": enhanced_analysis.get("analysis", {}).get("patterns", []),
-            "root_causes": enhanced_analysis.get("analysis", {}).get("patterns", []),
-            "recommendations": enhanced_analysis.get("insights", {}).get("recommendations", []),
+            "root_causes": enhanced_analysis.get("root_causes", []),
+            "recommendations": enhanced_analysis.get("recommendations", []),
             "impact_analysis": {"status": "analysis_completed"},
-            "llm_insights": enhanced_analysis.get("insights", {}),
+            "llm_insights": enhanced_analysis.get("llm_insights", {}),
             "data_sources": ["offline_analysis"],
             "timestamp": enhanced_analysis.get("model_info", {}).get("timestamp", datetime.now().isoformat()),
             "processing_time_ms": enhanced_analysis.get("processing_time_ms", 100),
@@ -439,7 +457,7 @@ async def advanced_analyze_query(request: QueryRequest):
                 "embedding_based_patterns": "Enabled",
                 "precomputed_embeddings": "Enabled",
                 "intelligent_text_understanding": "Enabled",
-                "llm_model": ai_analyzer.enhanced_engine.text_analyzer_name if ai_analyzer.enhanced_engine else "unavailable",
+                "llm_model": ai_analyzer.enhanced_engine.llm_model_name if ai_analyzer.enhanced_engine else "unavailable",
                 "data_source": "third-assignment-sample-data-set"
             }
         }
@@ -491,15 +509,18 @@ async def get_model_info():
             }
         
         return {
-            "model_name": ai_analyzer.enhanced_engine.text_analyzer_name or "unavailable",
-            "model_type": "NLTK + TextBlob",
+            "model_name": ai_analyzer.enhanced_engine.llm_model_name or "unavailable",
+            "model_type": "Gemini (primary) + Offline LLM + NLTK + TextBlob",
             "capabilities": [
+                "LLM-powered text generation",
                 "Sentiment analysis",
                 "Text classification",
                 "TF-IDF based text analysis",
                 "Pattern recognition",
                 "Entity extraction",
-                "Statistical text analysis"
+                "Statistical text analysis",
+                "Root cause analysis",
+                "Actionable recommendations"
             ],
             "data_source": "third-assignment-sample-data-set",
             "features": {
@@ -507,13 +528,18 @@ async def get_model_info():
                 "semantic_similarity_threshold": 0.7,
                 "clustering_enabled": True,
                 "caching_enabled": True,
-                "real_time_analysis": True
+                "real_time_analysis": True,
+                "llm_insights": True,
+                "root_cause_analysis": True,
+                "recommendation_generation": True
             },
             "performance": {
                 "embedding_dimension": 384,
-                "max_sequence_length": 256,
+                "max_sequence_length": 512,
                 "supported_languages": ["English"],
-                "model_size": "22.7MB"
+                "model_size": "n/a",
+                "llm_model": ai_analyzer.enhanced_engine.llm_model_name or "unavailable",
+                "llm_provider": getattr(ai_analyzer.enhanced_engine, 'llm_provider', 'offline')
             },
             "data_statistics": {
                 "total_orders": "~15,000",

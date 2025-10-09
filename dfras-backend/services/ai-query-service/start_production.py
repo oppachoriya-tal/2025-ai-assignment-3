@@ -8,6 +8,7 @@ import os
 import sys
 import ssl
 import logging
+from typing import Optional
 import asyncio
 from pathlib import Path
 
@@ -52,6 +53,22 @@ def setup_ssl_environment():
 
 def setup_environment():
     """Setup production environment variables"""
+    # Load .env if available
+    try:
+        from dotenv import load_dotenv
+        # Try multiple common locations inside the container
+        loaded_any = False
+        for env_path in [Path('/app/.env'), Path('/app/config/.env')]:
+            if env_path.exists():
+                load_dotenv(dotenv_path=env_path, override=False)
+                logger.info(f"Loaded environment variables from {env_path}")
+                loaded_any = True
+        if not loaded_any:
+            # Fallback to default search in CWD
+            load_dotenv()
+            logger.info("Loaded environment variables from default .env search (if present)")
+    except Exception as e:
+        logger.info(f"dotenv not used or failed to load: {e}")
     # Set production environment variables
     os.environ.setdefault('PYTHONUNBUFFERED', '1')
     os.environ.setdefault('PYTHONDONTWRITEBYTECODE', '1')
@@ -71,6 +88,13 @@ def setup_environment():
     os.environ.setdefault('AI_SIMILARITY_THRESHOLD', '0.7')
     os.environ.setdefault('AI_KMEANS_CLUSTERS', '5')
     os.environ.setdefault('BUSINESS_INR_RATE', '83.0')
+
+    # Gemini Configuration (optional)
+    # Expect GEMINI_API_KEY and optional GEMINI_MODEL (e.g., gemini-1.5-flash)
+    if os.getenv('GEMINI_API_KEY'):
+        logger.info("Gemini API key detected in environment")
+    else:
+        logger.info("Gemini API key not set; service will use offline LLM fallback")
     
     logger.info("Production environment variables configured")
 
@@ -94,6 +118,15 @@ def check_dependencies():
         import certifi
         import nltk
         import textblob
+        # Optional dependencies
+        try:
+            import google.generativeai  # noqa: F401
+        except Exception:
+            logger.info("google-generativeai not available; Gemini will be disabled")
+        try:
+            import dotenv  # noqa: F401
+        except Exception:
+            logger.info("python-dotenv not available; skipping .env support")
         logger.info("All dependencies available")
         return True
     except ImportError as e:
